@@ -8,6 +8,7 @@
 // adaptations by Gerrit Polder PA3BYA, Januari 2014
 // - shutdown carier when transmission ready
 // - adapted timing
+// - timing and bandwidth - commandline parameters
 
 #include <stdio.h>
 #include <string.h>
@@ -28,6 +29,12 @@
 #define BLOCK_SIZE (4*1024)
 
 #define PI 3.14159265
+
+// defaults (gp, proper settings for narrowband sstv)
+#define DEFAULTFREQ 144.5
+#define DEFAULTRATE 22050
+#define DEFAULTBANDWIDTH 1
+#define DEFAULTTIMING 1414.0
 
 int  mem_fd;
 char *gpio_mem, *gpio_map;
@@ -183,18 +190,20 @@ public:
     const int sleeptime;
     float fracerror;
     float timeErr;
+    float modulation_index;
     
-    Outputter(float rate):
+    Outputter(float rate, float bandwidth, float timing_correction):
         sleeptime((float)1e6 * BUFFERINSTRUCTIONS/4/rate/2),   // sleep time is half of the time to empty the buffer
         fracerror(0),
+        modulation_index(bandwidth),
         timeErr(0) {
 //        clocksPerSample = 22500.0 / rate * 1373.5;  // for timing, determined by experiment
-        clocksPerSample = 22050.0 / rate * 1414.03;  // for timing, determined by experiment
+        clocksPerSample = 22050.0 / rate * timing_correction;  // for timing, determined by experiment
         bufPtr=0;
     };
     void consume(float* data, int num) {
         for (int i=0; i<num; i++) {
-            float value = data[i]*1;  // modulation index (AKA volume!) (original 8)
+            float value = data[i]*modulation_index;  // modulation index (AKA volume!) (original 8)
            
             // dump raw baseband data to stdout for audacity analysis.
             //write(1, &value, 4);
@@ -524,7 +533,7 @@ public:
 };
 
 
-void playWav(char* filename, float samplerate, bool stereo)
+void playWav(char* filename, float samplerate, float bandwidth, float timing_correction, bool stereo)
 {
     int fp= STDIN_FILENO;
     if(filename[0]!='-') fp = open(filename, 'r');
@@ -534,7 +543,7 @@ void playWav(char* filename, float samplerate, bool stereo)
     SampleSink* ss;
     
     if (stereo) {
-      StereoModulator* sm = new StereoModulator(new RDSEncoder(new Outputter(152000)));
+      StereoModulator* sm = new StereoModulator(new RDSEncoder(new Outputter(152000,bandwidth,timing_correction)));
       ss = new StereoSplitter( 
         // left
         new PreEmp(samplerate, new Resamp(samplerate, 152000, sm->getChannel(0))), 
@@ -543,7 +552,7 @@ void playWav(char* filename, float samplerate, bool stereo)
         new PreEmp(samplerate, new Resamp(samplerate, 152000, sm->getChannel(1)))
       );
     } else {
-      ss = new Mono(new PreEmp(samplerate, new Outputter(samplerate)));
+      ss = new Mono(new PreEmp(samplerate, new Outputter(samplerate, bandwidth, timing_correction)));
     }
     
     for (int i=0; i<22; i++)
@@ -651,11 +660,17 @@ int main(int argc, char **argv)
     
     if (argc>1) {
       setup_fm(1);
-      setupDMA(argc>2?atof(argv[2]):103.3);
-      playWav(argv[1], argc>3?atof(argv[3]):22050, argc>4);
-    } else
-      fprintf(stderr, "Usage:   program wavfile.wav [freq] [sample rate] [stereo]\n\nWhere wavfile is 16 bit 22.05kHz Stereo.  Set wavfile to '-' to use stdin.\nfreq is in Mhz (default 103.3)\nsample rate of wav file in Hz\n\nPlay an empty file to transmit silence\n");
-          
+      setupDMA(argc>2?atof(argv[2]):DEFAULTFREQ);
+      playWav(argv[1], argc>3?atof(argv[3]):DEFAULTRATE, argc>4?atof(argv[4]):DEFAULTBANDWIDTH, argc>5?atof(argv[5]):DEFAULTTIMING, argc>6);
+    } else {
+      fprintf(stderr, "Usage:   %s wavfile.wav [freq] [sample rate] [band width] [timing correction] [stereo]\n\n",argv[0]);
+      fprintf(stderr, "Where wavfile is 16 bit Mono or Stereo.  Set wavfile to '-' to use stdin.\n");
+      fprintf(stderr, "freq is in Mhz (default %f)\n",DEFAULTFREQ);
+      fprintf(stderr, "sample rate of wav file in Hz (default %d)\n",DEFAULTRATE);
+      fprintf(stderr, "band width is an arbitrary number (default %d for narrowband sstv)\n",DEFAULTBANDWIDTH);
+      fprintf(stderr, "timing correction depends on your RPi clock (default %f)\n\n",DEFAULTTIMING);
+      fprintf(stderr, "Play an empty file to transmit silence\n",argv[0]);
+    }
 	setup_fm(0);  // gp shut off carier 
     return 0;
 
