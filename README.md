@@ -1,9 +1,13 @@
+# PiSSTV
+
+Gerrit Polder, PA3BYA.
+
 pisstv is an attemp to use the Raspberry Pi as a slow scan television (SSTV) camera.
 Its intended for use by ham radio amateurs.
 
 It mainly consists of three commands.
 
-raspistill: to grab the inage from the camera.
+raspistill: to grab the image from the camera.
 pisstv: to convert the image to a soundfile.
 pifm_sstv: to transmit the soundfile over the air, e.g. on 144.5 MHz
 
@@ -15,3 +19,10 @@ pifm_sstv is based on the work of Oliver Mattos and Oskar Weigl  (http://www.icr
 The original program was intended for transmitting broadband stereo signals.
 I adapted it a little bit so that the bandwidth can be set, which is very important for narrow-band ham radio transmissions. Also the timing can be tuned from the command-line, which is important for SSTV, where impropper timing results in slanted images.
 
+sstvcatch is kind of a sstv security camera. A python script runs an endless loop, waits for image change, then transmits image data on 144.5 MHz using SSTV.
+
+## License
+All of the code contained here is licensed by the GNU General Public License v3.
+
+## Credit
+Credit to KI4MCW (sstv), Oliver Mattos and Oskar Weigl (pifm).
