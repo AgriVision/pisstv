@@ -24,5 +24,5 @@ sstvcatch is kind of a sstv security camera. A python script runs an endless loo
 ## License
 All of the code contained here is licensed by the GNU General Public License v3.
 
-## Credit
-Credit to KI4MCW (sstv), Oliver Mattos and Oskar Weigl (pifm).
+## Credits
+Credits to KI4MCW (sstv), Oliver Mattos and Oskar Weigl (pifm).
