@@ -32,5 +32,5 @@ At the end of your /etc/rc.local to start this software automatically at power u
 ## License
 All of the code contained here is licensed by the GNU General Public License v3.
 
-## Credit
-Credit to KI4MCW (sstv), Oliver Mattos and Oskar Weigl (pifm).
+## Credits
+Credits to KI4MCW (sstv), Oliver Mattos and Oskar Weigl (pifm).
