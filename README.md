@@ -22,10 +22,10 @@ I adapted it a little bit so that the bandwidth can be set, which is very import
 sstvcatch is kind of a sstv security camera. A python script runs an endless loop, waits for image change, then transmits image data on 144.5 MHz using SSTV.
 
 sstvcam.py is a point and shoot sstv camera. It uses the piface control and display (http://www.piface.org.uk/products/piface_control_and_display/) as user interface.
-Put:
 
-python3 /home/pi/pifacecad/startup.py
-python3 /home/pi/pisstv/sstvcam.py &
+Put:
+ * python3 /home/pi/pifacecad/startup.py
+ * python3 /home/pi/pisstv/sstvcam.py &
 
 At the end of your /etc/rc.local to start this software automatically at power up.
 
